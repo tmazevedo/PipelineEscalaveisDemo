@@ -1,0 +1,35 @@
+name: "🏗️ Build Runner Image (GitHub-Hosted)"
+
+on:
+  workflow_dispatch: # Permite disparar manualmente pelo botão no GitHub
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  docker-build-push:
+    # IMPORTANTE: Usamos o runner do próprio GitHub para ter Docker pronto
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📂 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔑 Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: 33e3541d-1b43-4a99-92ed-b6cce31b1df8
+          tenant-id: 7b3576f3-a15e-442a-91f4-f0109642be20
+          subscription-id: 67f1680f-e19d-4ee7-8786-aed946e04cfb
+
+      - name: 🔐 ACR Login
+        run: az acr login --name pipeEscalavelAcr
+
+      - name: 🏗️ Docker Build
+        run: |
+          docker build -t pipeescalavelacr.azurecr.io/custom-arc-runner:latest .
+
+      - name: 🚀 Docker Push
+        run: |
+          docker push pipeescalavelacr.azurecr.io/custom-arc-runner:latest
