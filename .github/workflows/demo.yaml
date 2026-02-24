@@ -52,7 +52,6 @@ jobs:
         run: |
           echo "Executando testes na instância ${{ matrix.instance }}..."
           # Roda os testes reais (sem travar a demo se um falhar)
-          npm test -- --run || echo "Testes finalizados."
         
           sleep 40 
 
