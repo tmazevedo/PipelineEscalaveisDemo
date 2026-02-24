@@ -31,8 +31,10 @@ jobs:
   
       - name: 🏷️ Tag for ACR
         run: |
-          docker tag ghcr.io/catthehacker/ubuntu:act-22.04 pipeescalavelacr.azurecr.io/actions-runner-full:latest
-  
+          # Aqui criamos o "atalho" local com o nome que o seu AKS espera
+          docker tag ghcr.io/catthehacker/ubuntu:act-22.04 pipeescalavelacr.azurecr.io/custom-arc-runner:latest
+
       - name: 🚀 Push to your ACR
         run: |
+          # Agora o Docker vai encontrar a imagem com este nome exato
           docker push pipeescalavelacr.azurecr.io/custom-arc-runner:latest
