@@ -25,11 +25,14 @@ jobs:
 
       - name: 🔐 ACR Login
         run: az acr login --name pipeEscalavelAcr
-
-      - name: 🏗️ Docker Build
+  
+      - name: 📥 Pull Public Image
+        run: docker pull ghcr.io/catthehacker/ubuntu:act-22.04
+  
+      - name: 🏷️ Tag for ACR
         run: |
-          docker build -t pipeescalavelacr.azurecr.io/custom-arc-runner:latest .
-
-      - name: 🚀 Docker Push
+          docker tag ghcr.io/catthehacker/ubuntu:act-22.04 pipeescalavelacr.azurecr.io/actions-runner-full:latest
+  
+      - name: 🚀 Push to your ACR
         run: |
           docker push pipeescalavelacr.azurecr.io/custom-arc-runner:latest
