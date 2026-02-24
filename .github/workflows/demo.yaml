@@ -4,10 +4,12 @@ on:
   workflow_dispatch: # Disparo manual para sua demo
 
 jobs:
-  heavy-ci-pipeline:
+  pipeline:
     # label do seu Runner Set do ARC
     runs-on: [self-hosted, pipeline-escalavel-demo]
-
+    defaults:
+      run:
+        working-directory: apps/api
     strategy:
       matrix:
         # Criamos 3 execuções simultâneas.
