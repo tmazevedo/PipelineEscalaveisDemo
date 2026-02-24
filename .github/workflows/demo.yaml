@@ -1,0 +1,50 @@
+name: "🚀 Demo Pipelines Escalaveis"
+
+on:
+  workflow_dispatch: # Disparo manual para sua demo
+
+jobs:
+  heavy-ci-pipeline:
+    # label do seu Runner Set do ARC
+    runs-on: [self-hosted, pipeline-escalavel-demo]
+
+    strategy:
+      matrix:
+        # Criamos 3 execuções simultâneas.
+        # No ARC, isso deve disparar 3 PODS diferentes imediatamente.
+        instance: [1, 2, 3]
+
+    steps:
+      - name: 📂 Checkout RealWorld Project
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 📦 Install Dependencies
+        run: |
+          echo "Instalando dependências pesadas..."
+          npm install
+
+      - name: 🔍 Static Analysis & Lint
+        run: |
+          echo "Rodando ESlint e Prettier..."
+          # Simula um processamento de 15 segundos
+          sleep 15
+          npm run lint || echo "Lint finalizado (com avisos simulados)"
+
+      - name: 🧪 Heavy Testing Suite
+        run: |
+          echo "Iniciando Testes de Integração na instância ${{ matrix.instance }}..."
+          # O MOMENTO DO SHOW: 40 segundos de espera.
+          # É aqui que você abre o terminal e mostra o K8s criando os Pods.
+          sleep 40 
+          echo "Todos os 150 testes passaram!"
+
+      - name: 🐳 Containerize (Kaniko Simulation)
+        run: |
+          echo "Gerando imagem Docker: realworld-backend:v1.${{ github.run_number }}"
+          # Simula o tempo de compressão de camadas
+          sleep 10
