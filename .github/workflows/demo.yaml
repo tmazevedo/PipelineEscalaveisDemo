@@ -14,9 +14,9 @@ jobs:
       run:
         working-directory: apps/api
 
-    strategy:
-      matrix:
-        instance: [1, 2, 3] # Escala 3 pods simultâneos no AKS
+    # strategy:
+    #   matrix:
+    #     instance: [1, 2, 3] # Escala 3 pods simultâneos no AKS
 
     steps:
       - name: 📂 Checkout
@@ -57,7 +57,7 @@ jobs:
 
       - name: 🚀 Deploy to App Service
         # Apenas a instância 1 faz o deploy para evitar conflitos no App Service
-        if: matrix.instance == 1
+        # if: matrix.instance == 1
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'demo-pipelines-esclaveis' 
