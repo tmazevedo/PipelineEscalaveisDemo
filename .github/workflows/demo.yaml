@@ -30,23 +30,30 @@ jobs:
           echo "Instalando dependências pesadas..."
           npm install
 
-      - name: 🔍 Static Analysis & Lint
+      - name: 🗄️ Prisma Generate
         run: |
-          echo "Rodando ESlint e Prettier..."
-          # Simula um processamento de 15 segundos
-          sleep 15
-          npm run lint || echo "Lint finalizado (com avisos simulados)"
+          # Isso compila o cliente Prisma, um processo real de build
+          npx prisma generate
+          
+      - name: 🧪 Run Real Vitest Suite
+        run: |
+          echo "Executando testes reais da instância ${{ matrix.instance }}..."
+          # Rodando o vitest real do seu package.json
+          # O --run garante que ele não fique em modo 'watch'
+          npm test -- --run
 
-      - name: 🧪 Heavy Testing Suite
+      - name: ⏳ Scalability Hold (O Momento da Demo)
         run: |
-          echo "Iniciando Testes de Integração na instância ${{ matrix.instance }}..."
-          # O MOMENTO DO SHOW: 40 segundos de espera.
-          # É aqui que você abre o terminal e mostra o K8s criando os Pods.
+          echo "---------------------------------------------------------"
+          echo "TESTES REAIS CONCLUÍDOS COM SUCESSO!"
+          echo "Segurando o Pod por 40s para demonstrar o escalonamento..."
+          echo "---------------------------------------------------------"
+          # O sleep aqui é essencial para você ter tempo de falar 
+          # enquanto os 4 pods aparecem no 'kubectl get pods'
           sleep 40 
-          echo "Todos os 150 testes passaram!"
-
-      - name: 🐳 Containerize (Kaniko Simulation)
+  
+      - name: 🏗️ Production Build
         run: |
-          echo "Gerando imagem Docker: realworld-backend:v1.${{ github.run_number }}"
-          # Simula o tempo de compressão de camadas
-          sleep 10
+          # Faz o build real do Nitro (gera a pasta .output)
+          # Isso é o que um pipeline de prod faz antes do deploy
+          npm run build
