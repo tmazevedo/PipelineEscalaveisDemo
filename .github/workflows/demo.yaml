@@ -1,59 +1,76 @@
 name: "🚀 Demo Pipelines Escalaveis"
 
 on:
-  workflow_dispatch: # Disparo manual para sua demo
+  workflow_dispatch: # Disparo manual 
 
+permissions:
+  id-token: write
+  contents: read
 jobs:
+  infra-creation:
+    runs-on: [self-hosted, pipeline-escalavel-demo]
+    steps:
+          - name: 🔑 Azure Login
+            uses: azure/login@v2
+            with:
+              client-id: 33e3541d-1b43-4a99-92ed-b6cce31b1df8
+              tenant-id: 7b3576f3-a15e-442a-91f4-f0109642be20
+              subscription-id: 67f1680f-e19d-4ee7-8786-aed946e04cfb
+
+          - name: 🏗️ Setup App Service Plan & WebApp
+            run: |
+              # Usando o seu RG existente: demo-pipelines-esclaveis
+              echo "Verificando Infraestrutura..."
+              az appservice plan create --name plan-demo-escalavel --resource-group demo-pipelines-escalaveis --sku B1 --is-linux || echo "Plan existe."
+              az webapp create --name webapp-demo-pipeline --resource-group demo-pipelines-esclaveis --plan plan-demo-escalavel --runtime "NODE:20-lts" || echo "App existe."   
   pipeline:
+    needs: infra-creation
     # label do seu Runner Set do ARC
     runs-on: [self-hosted, pipeline-escalavel-demo]
     defaults:
       run:
         working-directory: apps/api
+
     strategy:
       matrix:
-        # Criamos 3 execuções simultâneas.
-        # No ARC, isso deve disparar 3 PODS diferentes imediatamente.
-        instance: [1, 2, 3]
+        instance: [1, 2, 3] # Escala 3 pods simultâneos no AKS
 
     steps:
-      - name: 📂 Checkout RealWorld Project
+      - name: 📂 Checkout
         uses: actions/checkout@v4
+
+      - name: 🔑 Azure Login 
+        uses: azure/login@v2
+        with:
+          client-id: 33e3541d-1b43-4a99-92ed-b6cce31b1df8
+          tenant-id: 7b3576f3-a15e-442a-91f4-f0109642be20
+          subscription-id: 67f1680f-e19d-4ee7-8786-aed946e04cfb
 
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Install & Prisma
         run: |
-          echo "Instalando dependências pesadas..."
-          npm install
-
-      - name: 🗄️ Prisma Generate
-        run: |
-          # Isso compila o cliente Prisma, um processo real de build
+          npm ci
           npx prisma generate
-          
-      - name: 🧪 Run Real Vitest Suite
-        run: |
-          echo "Executando testes reais da instância ${{ matrix.instance }}..."
-          # Rodando o vitest real do seu package.json
-          # O --run garante que ele não fique em modo 'watch'
-          npm test -- --run
 
-      - name: ⏳ Scalability Hold (O Momento da Demo)
+      - name: 🧪 Real Vitest & Scalability Await
         run: |
-          echo "---------------------------------------------------------"
-          echo "TESTES REAIS CONCLUÍDOS COM SUCESSO!"
-          echo "Segurando o Pod por 40s para demonstrar o escalonamento..."
-          echo "---------------------------------------------------------"
-          # O sleep aqui é essencial para você ter tempo de falar 
-          # enquanto os 4 pods aparecem no 'kubectl get pods'
+          echo "Iniciando testes reais na instância ${{ matrix.instance }}..."
+          npm test -- --run
+          echo "--- AGUARDANDO 40S PARA DEMO DE ESCALA ---"
           sleep 40 
-  
-      - name: 🏗️ Production Build
-        run: |
-          # Faz o build real do Nitro (gera a pasta .output)
-          # Isso é o que um pipeline de prod faz antes do deploy
-          npm run build
+
+      - name: 🏗️ Build Nitro
+        run: npm run build
+
+      - name: 🚀 Deploy to App Service
+        if: matrix.instance == 1 # Apenas uma instância faz o deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'webapp-demo-pipeline'
+          package: apps/api/.output
