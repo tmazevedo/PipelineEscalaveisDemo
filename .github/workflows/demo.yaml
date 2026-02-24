@@ -24,7 +24,9 @@ jobs:
       - name: 🏗️ Setup App Service Plan & WebApp
         run: |
           # Usando o seu RG existente: demo-pipelines-esclaveis
-          echo "Verificando Infraestrutura..."
+          
+          az provider register --namespace Microsoft.Web --wait
+
           az appservice plan create --name plan-demo-escalavel --resource-group demo-pipelines-escalaveis --sku B1 --is-linux || echo "Plan existe."
           az webapp create --name webapp-demo-pipeline --resource-group demo-pipelines-esclaveis --plan plan-demo-escalavel --runtime "NODE:20-lts" || echo "App existe."
   pipeline:
